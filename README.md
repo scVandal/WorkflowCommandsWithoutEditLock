@@ -4,7 +4,7 @@ The ExtendedWorkflowPanel class provided in this repository is used to revert a 
 This class provides a medium-ground between the old and new way by modifying the WorkflowPanel class in Sitecore.Client to include a custom validation function for the Context User which can be used to enable the old way of executing workflow commands on an item without locking it to certain roles, users, or any number of other criteria that one desires!
 
 # How It Works
-The ExtendedWorkflowPanel.cs class is a direct extract-and-copy of the WorkflowPanel.cs class from Sitecore.Client in the namespace Sitecore. The class makes only two modifications to the class.
+The ExtendedWorkflowPanel.cs class is a direct extract-and-copy of the WorkflowPanel.cs class from Sitecore.Client in the Sitecore.Shell.Applications.ContentManager.Panels namespace. The class makes only two modifications to the class.
 
 Firstly, the class contains a new method, canUserRunCommandsWithoutEdit(). This method is the main authenticator method used to determine if the current context user should be allowed to execute workflow commands without locking the item. As provided, this class defines a list of roles and checks if the user is a member of any of those roles. If they are, a true boolean value is returned, meaning they should have the ability to execute commands without locking items. If they are a member of none of the defined roles, a false boolean value is returned indicating they should not have this access.
 
