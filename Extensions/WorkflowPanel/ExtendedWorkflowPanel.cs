@@ -1,20 +1,4 @@
-﻿/* <summary>
- *      This class is a standalone, extended copy of the WorkflowPanel class as defined in Sitecore.Client
- *      and makes minimal modifications to allow a user who meets certain role criteria (defined by you!) to
- *      execute Workflow Commands from the workflow panel without locking the item for editing.
- *      
- *      This is the way Sitecore worked prior to 8.1 and this class is a reversion to this functionality with the 
- *      added benefit of allowing you to dole out this 'inline workflow command execute' ability as you desire.
- *      
- *      The extensiosn to this class are minimal: a new canUserRunCommandsWithoutEdit class is created which returns a
- *      Boolean value. This boolean value is used in line 62 in the flag4 definition to allow the workflowpanel to enable
- *      user interaction with the Workflow Panel buttons.
- *      
- *      You can modify the canUserRunCommandsWithoutEdit() method to include additional roles, or expand it even further
- *      to suite your needs when it comes to limiting this inline workflow command execution ability.
- */
-
-using Sitecore;
+﻿using Sitecore;
 using Sitecore.Configuration;
 using Sitecore.Data.Items;
 using Sitecore.Diagnostics;
@@ -29,10 +13,13 @@ using Sitecore.Workflows;
 using System.Collections.Generic;
 using System.Web.UI;
 
-//CHANGE THE NAMESPACE TO SUIT YOUR ENVIRONMENT!
-namespace BaseConfig.Extensions
+/// <summary>
+///     This class is a straight extract-and-copy from Sitecore.Client's WorkflowPanel method. This extends class makes a single modification to 
+///     the flag4 boolean code at line  53, adding a call to Utilities.canUserRunCommandsWithoutLocking() method, which checks if the context user meets
+///     the conditions outlined in the utilities method to execute workflow commands without locking the item.
+/// </summary>
+namespace SS.BaseConfig.Extensions.WorkflowPanel
 {
-    /// <summary>Represents a WorkflowPanel.</summary>
     public class ExtendedWorkflowPanel : RibbonPanel
     {
         /// <summary>The _check in item.</summary>
@@ -60,8 +47,10 @@ namespace BaseConfig.Extensions
             bool flag1 = this.IsCommandEnabled("item:checkout", obj);
             bool flag2 = ExtendedWorkflowPanel.CanShowCommands(obj, commands);
             bool flag3 = this.IsCommandEnabled("item:checkin", obj);
+            //Add call to Utilities.canUserRunCommandsWithoutLocking() to validate user against custom criteria. If method returns true, this flag4 will be set
+            //to true and the workflow commands will be clickable even if item is not locked by user
             bool flag4 = Context.User.IsAdministrator || obj.Locking.HasLock() || !Settings.RequireLockBeforeEditing ||
-                         canUserRunCommandsWithoutEdit();
+                         Utilities.canUserRunCommandsWithoutLocking();
             this.RenderText(output, ExtendedWorkflowPanel.GetText(context.Items));
             if (!(workflow != null | flag1 | flag2 | flag3))
                 return;
@@ -206,32 +195,6 @@ namespace BaseConfig.Extensions
             if (commandState != CommandState.Down)
                 return commandState == CommandState.Enabled;
             return true;
-        }
-
-        /// <summary>
-        /// Determines whether the current context user has the ability to execute workflow commands without locking the item
-        /// for editing. In its current implementation the class simply checks the current user against a list of roles that 
-        /// shoudl have this permission. You can extend and expand this class to include all sorts of validation as desired.
-        /// </summary>
-        /// <returns>
-        ///     true if user meets the cireteria set out by the class
-        /// </returns>
-        private bool canUserRunCommandsWithoutEdit()
-        {
-            User user = Context.User;
-            //Define list of roles that are approved to have this access. Add the full name for your environment here 
-            List<string> roleList = new List<string>
-            {
-                "sitecore\\Author",         //This is the standard Author role provided with Sitecore
-                "sitecore\\anotherRoleHere" //This is a fake role just serving as an example!
-            };
-            //Iterate over each role in the list and check if user is a member of the role. If they are return true
-            foreach(string s in roleList)
-            {
-                if(user.IsInRole(s)) { return true; }
-            }
-            //Otherwise return false, indicating user should not have the right to execute commands without locking item
-            return false;
         }
     }
 }
